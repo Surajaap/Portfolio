@@ -1,7 +1,8 @@
-const express    = require("express");
-const cors       = require("cors");
-const path       = require("path");
-const https      = require("https");
+const express = require("express");
+const cors    = require("cors");
+const path    = require("path");
+const https   = require("https");
+const fs      = require("fs");
 require("dotenv").config();
 
 const app  = express();
@@ -9,41 +10,44 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname)));
 
-// Resume download
-app.get("/resume.pdf", (req, res) => {
-  const filePath = path.join(__dirname, "resume.pdf");
-  const fs = require("fs");
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).send("Resume not found.");
+// ── STATIC FILES ─────────────────────────────────────────────
+app.use(express.static(path.join(__dirname), {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith(".css"))  res.setHeader("Content-Type", "text/css");
+    if (filePath.endsWith(".js"))   res.setHeader("Content-Type", "application/javascript");
+    if (filePath.endsWith(".html")) res.setHeader("Content-Type", "text/html");
   }
+}));
+
+// ── RESUME ───────────────────────────────────────────────────
+app.get("/resume.pdf", (req, res) => {
+  const fp = path.join(__dirname, "resume.pdf");
+  if (!fs.existsSync(fp)) return res.status(404).send("Resume not found.");
   res.setHeader("Content-Disposition", "attachment; filename=Suraj_Patel_Resume.pdf");
   res.setHeader("Content-Type", "application/pdf");
-  res.sendFile(filePath);
+  res.sendFile(fp);
 });
 
-// Result download
+// ── RESULT ───────────────────────────────────────────────────
 app.get("/result.pdf", (req, res) => {
   const fp = path.join(__dirname, "result.pdf");
-  const fs = require("fs");
   if (!fs.existsSync(fp)) return res.status(404).send("Result not found.");
   res.setHeader("Content-Disposition", "attachment; filename=Suraj_Patel_Result.pdf");
   res.setHeader("Content-Type", "application/pdf");
   res.sendFile(fp);
 });
 
-// Certificate download
+// ── CERTIFICATE ───────────────────────────────────────────────
 app.get("/certificate.pdf", (req, res) => {
   const fp = path.join(__dirname, "certificate.pdf");
-  const fs = require("fs");
   if (!fs.existsSync(fp)) return res.status(404).send("Certificate not found.");
   res.setHeader("Content-Disposition", "attachment; filename=Suraj_Patel_Certificate.pdf");
   res.setHeader("Content-Type", "application/pdf");
   res.sendFile(fp);
 });
 
-// Contact Form — Web3Forms
+// ── CONTACT FORM ─────────────────────────────────────────────
 app.post("/api/contact", async (req, res) => {
   const { name, email, message } = req.body;
   if (!name || !email || !message)
@@ -51,20 +55,15 @@ app.post("/api/contact", async (req, res) => {
 
   const bodyData = JSON.stringify({
     access_key: process.env.WEB3FORMS_KEY,
-    name:       name,
-    email:      email,
-    message:    message,
-    subject:    `Portfolio Message from ${name}`,
+    name, email, message,
+    subject: `Portfolio Message from ${name}`,
   });
 
   const options = {
     hostname: "api.web3forms.com",
     path:     "/submit",
     method:   "POST",
-    headers:  {
-      "Content-Type":   "application/json",
-      "Content-Length": Buffer.byteLength(bodyData),
-    },
+    headers:  { "Content-Type": "application/json", "Content-Length": Buffer.byteLength(bodyData) },
   };
 
   const apiReq = https.request(options, apiRes => {
@@ -73,27 +72,17 @@ app.post("/api/contact", async (req, res) => {
     apiRes.on("end", () => {
       try {
         const json = JSON.parse(data);
-        if (json.success) {
-          res.json({ success: true });
-        } else {
-          res.status(500).json({ error: "Message nahi gaya. Try again." });
-        }
-      } catch {
-        res.status(500).json({ error: "Response error." });
-      }
+        if (json.success) res.json({ success: true });
+        else res.status(500).json({ error: "Message nahi gaya." });
+      } catch { res.status(500).json({ error: "Response error." }); }
     });
   });
-
-  apiReq.on("error", err => {
-    console.error(err);
-    res.status(500).json({ error: "Connection error." });
-  });
-
+  apiReq.on("error", err => { console.error(err); res.status(500).json({ error: "Connection error." }); });
   apiReq.write(bodyData);
   apiReq.end();
 });
 
-// AI Chat — Gemini
+// ── AI CHAT ───────────────────────────────────────────────────
 app.post("/api/chat", (req, res) => {
   const { messages } = req.body;
 
@@ -120,10 +109,7 @@ If asked unrelated questions say: "I can only answer questions about Suraj Patel
   const contents = [
     { role: "user",  parts: [{ text: systemPrompt }] },
     { role: "model", parts: [{ text: "Understood! I'm ready to answer questions about Suraj Patel." }] },
-    ...messages.map(m => ({
-      role:  m.role === "assistant" ? "model" : "user",
-      parts: [{ text: m.content }]
-    }))
+    ...messages.map(m => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] }))
   ];
 
   const bodyData = JSON.stringify({ contents });
@@ -140,19 +126,19 @@ If asked unrelated questions say: "I can only answer questions about Suraj Patel
     apiRes.on("end", () => {
       try {
         const json  = JSON.parse(data);
-        const reply = json.candidates?.[0]?.content?.parts?.[0]?.text
-                      || "Sorry, I couldn't answer that.";
+        const reply = json.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't answer that.";
         res.json({ reply });
-      } catch {
-        res.status(500).json({ reply: "Error processing response." });
-      }
+      } catch { res.status(500).json({ reply: "Error processing response." }); }
     });
   });
-
   apiReq.on("error", () => res.status(500).json({ reply: "Connection error." }));
   apiReq.write(bodyData);
   apiReq.end();
 });
 
-app.get("*", (req, res) => res.sendFile(path.join(__dirname, "index.html")));
-app.listen(PORT, () => console.log(`\n✅ Portfolio running at: http://localhost:${PORT}\n`));
+// ── FALLBACK ──────────────────────────────────────────────────
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "index.html"));
+});
+
+app.listen(PORT, () => console.log(`✅ Running at http://localhost:${PORT}`));
