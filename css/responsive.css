@@ -1,0 +1,28 @@
+@media (max-width: 900px) {
+  .hero-stats { display: none; }
+  .about-grid, .contact-grid { grid-template-columns: 1fr; gap: 2rem; }
+  nav ul { gap: 1rem; }
+  nav a { font-size: 0.75rem; }
+}
+
+@media (max-width: 640px) {
+  section { padding: 60px 5%; }
+  nav { padding: 0 5%; }
+  nav ul { display: none; position: fixed; top: 64px; left: 0; right: 0; background: rgba(10,14,26,0.98); flex-direction: column; align-items: center; gap: 0; padding: 1rem 0; border-bottom: 1px solid var(--border); z-index: 99; }
+  nav ul.open { display: flex; }
+  nav ul li { width: 100%; text-align: center; }
+  nav ul li a { display: block; padding: 1rem; font-size: 0.9rem; }
+  #menu-btn { display: block; }
+  h1.hero-name { font-size: 2.8rem; }
+  .hero-btns { flex-direction: column; }
+  .btn-primary, .btn-outline { text-align: center; }
+  .about-info, .form-row { grid-template-columns: 1fr; }
+  .skills-grid, .projects-grid, .cert-grid { grid-template-columns: 1fr; }
+  footer { flex-direction: column; text-align: center; gap: 0.5rem; }
+}
+
+@media (max-width: 400px) {
+  h1.hero-name { font-size: 2.2rem; }
+  .section-title { font-size: 1.6rem; }
+  .edu-degree { font-size: 1.2rem; }
+}
