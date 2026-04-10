@@ -9,7 +9,10 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname)));
+//app.use(express.static(path.join(__dirname)));
+app.use('/css', express.static(path.join(__dirname, 'css')));
+app.use('/js', express.static(path.join(__dirname, 'js')));
+app.use(express.static(__dirname));
 
 // Resume download
 app.get("/resume.pdf", (req, res) => {
