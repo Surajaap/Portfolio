@@ -8,6 +8,30 @@
   ],
   "routes": [
     {
+      "src": "/css/(.*)",
+      "dest": "/css/$1"
+    },
+    {
+      "src": "/js/(.*)",
+      "dest": "/js/$1"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/resume.pdf",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/result.pdf",
+      "dest": "/server.js"
+    },
+    {
+      "src": "/certificate.pdf",
+      "dest": "/server.js"
+    },
+    {
       "src": "/(.*)",
       "dest": "/server.js"
     }
