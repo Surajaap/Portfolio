@@ -12,20 +12,24 @@
       "dest": "server.js"
     },
     {
-      "src": "/resume.pdf",
+      "src": "/(.*\.pdf)$",
       "dest": "server.js"
     },
     {
-      "src": "/result.pdf",
-      "dest": "server.js"
+      "src": "/css/(.*)",
+      "dest": "/css/$1"
     },
     {
-      "src": "/certificate.pdf",
-      "dest": "server.js"
+      "src": "/js/(.*)",
+      "dest": "/js/$1"
+    },
+    {
+      "src": "/index.html",
+      "dest": "/index.html"
     },
     {
       "src": "/(.*)",
-      "dest": "/"
+      "dest": "/index.html"
     }
   ]
 }
