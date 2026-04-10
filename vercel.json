@@ -24,16 +24,8 @@
       "dest": "server.js"
     },
     {
-      "src": "/css/(.*)",
-      "dest": "/"
-    },
-    {
-      "src": "/js/(.*)",
-      "dest": "/"
-    },
-    {
       "src": "/(.*)",
-      "dest": "server.js"
+      "dest": "/"
     }
   ]
 }
